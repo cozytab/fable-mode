@@ -113,6 +113,16 @@ rc, out = run({"cwd": d, "model": "claude-fable-5"})
 c = ctx(out)
 check("inject/habits-throughput", rc == 0 and c and "Fable-5 habits" in c)
 
+# 15/16. model parity: both tiers say subagents inherit the session model
+d = proj(with_fable=True)
+rc, out = run({"cwd": d, "model": "claude-opus-4-8"})
+c = ctx(out)
+check("inject/model-parity-conservative", rc == 0 and c and "inherit this session's model" in c)
+d = proj(with_fable=True)
+rc, out = run({"cwd": d, "model": "claude-fable-5"})
+c = ctx(out)
+check("inject/model-parity-throughput", rc == 0 and c and "inherit this session's model" in c and "cheaper tiers" not in c)
+
 for d in tmps: shutil.rmtree(d, ignore_errors=True)
 print("\n%d passed, %d failed" % (passed, failed))
 sys.exit(1 if failed else 0)

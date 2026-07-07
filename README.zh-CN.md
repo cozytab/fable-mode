@@ -181,13 +181,19 @@ fable-mode 的并发不是一个死数字。
 Profile Injector 会按模型自动选档（`FABLE_MODE_PROFILE=auto|conservative|throughput`
 可覆盖）。
 
+**模型平级**：无论哪个档位，子 agent 都继承主会话的模型——fable-mode 绝不悄悄给
+子 agent 降级。解决问题优先于省 token；一个反复翻车的弱模型子 agent，比它省下的
+钱贵得多。降级是狭窄的显式例外，只用于机械且结果可机器校验的杂活——设计、有难度的
+实现、调试、验证一律不降。
+
 ## Fable 5 习惯集
 
 在六大杠杆之外，skill 还移植了 Anthropic 官方文档里 Fable 5 的具体行为——让任何
 模型进了 fable-mode 项目都继承它们：每条进度汇报先对照工具结果再说；回合绝不停在
 一句"我接下来会…"上（能做就当场做掉）；结论先行；只在真正需要用户时才暂停；先评估
 再动手；新鲜上下文的验证者优于自我检查；按任务路由 effort（max=评审、high=实现、
-low=收集）；派活时把"为什么"一起传下去；维护一份教训文件。其中价值最高的三条习惯
+low=收集——调的是思考预算，不是换更差的模型）；派活时把"为什么"一起传下去；维护
+一份教训文件。其中价值最高的三条习惯
 由 Profile Injector 自动注入每个 fable-mode 会话。
 
 起步骨架在 [`templates/`](templates/)——SPEC、LEDGER、PROGRESS，以及引擎中立的

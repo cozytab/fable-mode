@@ -66,7 +66,8 @@ A weak model's biggest failure mode is "thinking while typing, changing its mind
 **Choice of executor is Claude's own judgment, not a hard rule.** Subagent, Workflow, an external executor (e.g. codex exec), or doing it yourself — decide per card by the nature of the work / quality bar / quota level. Quality first; when in doubt, don't split — if you have any doubt that splitting preserves quality, do it yourself. **An external executor is one option, not this protocol's default.**
 
 ### 2. Small-card execution + per-card acceptance
-- Execute each card in a **fresh context** (subagent or codex exec), feeding only the relevant SPEC excerpt + that card's description — no reasoning garbage from prior cards. Route effort per spawn: **max** = judgment/verification/acceptance, **high** = implementation, **low** = mechanical gathering.
+- Execute each card in a **fresh context** (subagent or codex exec), feeding only the relevant SPEC excerpt + that card's description — no reasoning garbage from prior cards.
+- **Model parity rule**: subagents inherit the **same model as the main session** by default — never silently hand a card to a weaker model. Solving the problem outranks saving tokens; a weak subagent that flails costs more than it saves. Route **effort** per spawn (**max** = judgment/verification/acceptance, **high** = implementation, **low** = mechanical gathering) — effort is thinking budget on the *same* model, not permission to downgrade it.
 - Run the card's acceptance command the moment it's done; **do not advance until it passes**. On 2 failures, escalate back to the main context to crack it, rather than letting the executor flail.
 - Parallel cards fan out via Agent/Workflow; for concurrency see "Concurrency tiers" below — default to the **conservative tier (<=5 concurrent)**, and open the **throughput tier** only when the user explicitly asks.
 
@@ -117,8 +118,9 @@ them, on any model:
    against the SPEC — the generator should not be the only judge
    (see `templates/VERIFIER_PROMPT.md`).
 7. **Route effort per task**: max for judgment/verification/acceptance, high
-   for implementation, low for mechanical gathering. Never downgrade critical
-   output or adversarial checks.
+   for implementation, low for mechanical gathering. Effort is thinking budget
+   on the **same model** — not permission to hand the card to a weaker model.
+   Never downgrade critical output or adversarial checks.
 8. **Give the reason, not only the request.** When delegating, pass why the
    task matters and what the output enables — intent travels with the card.
 9. **Keep a lessons file.** Record corrections and confirmed approaches (one
@@ -141,7 +143,7 @@ fable-mode's concurrency is not a fixed number — pick a tier by the task. **De
   - Hard structural limit: **subagents are only one level deep — they can't spawn subagents** (Workflow nesting is also one level).
   - Tell the user the cost honestly: an orchestrator+parallel architecture can improve on a single agent by ~**90%**, but burns ~**15x tokens**, and higher concurrency is likelier to hit API rate limits.
 - **Local implementation**: opening up concurrency is not running naked — you must still have (1) async non-blocking (the orchestrator keeps working after dispatching, doesn't await each one), (2) per-segment verification, (3) a watchdog, (4) resumable checkpoints. Web-scraping subagents still obey the red line: `curl --max-time`, not WebFetch.
-- **Downgrade routing (optional, saves tokens)**: cheap mechanical subtasks can route to a lower-cost model / lower effort, keeping hard cards and acceptance on the main model. This is an orchestration-layer cost saving, not a quality downgrade — **critical output and adversarial self-check must never be downgraded**.
+- **Model parity still holds**: even at high fan-out, subagents inherit the session model by default. Downgrade routing is a **narrow, explicit exception** — only for trivially mechanical subtasks (gather/format/rename) whose output is machine-checkable, never for anything on the problem-solving path: design, non-trivial implementation, debugging, or verification. **Critical output and adversarial self-check must never be downgraded.** When in doubt, don't downgrade.
 
 ### Pick-a-tier in one line
 When unsure, use the conservative tier and tell the user "for more speed you can enable the throughput tier, at the cost of ~15x tokens + rate-limit risk"; let the user decide — don't burn money by default.

@@ -44,16 +44,19 @@ def build_context(profile, model, fable_dir):
     if profile == "throughput":
         tier = (
             "Current model %s -> THROUGHPUT tier: delegate parallel subagents "
-            "aggressively, communicate async (don't block on each return), "
-            "offload bulk work to cheaper tiers; still enforce "
-            "ledger-before-delegation and staged fresh-eyes verification. "
+            "aggressively, communicate async (don't block on each return); "
+            "still enforce ledger-before-delegation and staged fresh-eyes "
+            "verification. Subagents inherit this session's model — do NOT "
+            "downgrade them (solving the problem outranks saving tokens; "
+            "downgrade only trivially-mechanical, machine-checkable subtasks). "
             "The cost (~15x tokens / rate limits) is known and accepted." % m
         )
     else:
         tier = (
             "Current model %s -> CONSERVATIVE tier: cap concurrency at 5, "
             "inline-first, don't split unless it clearly helps, quality first; "
-            "if unsure whether delegation preserves quality, do it yourself." % m
+            "if unsure whether delegation preserves quality, do it yourself. "
+            "Subagents inherit this session's model — never a weaker one." % m
         )
 
     lines = [
