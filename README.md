@@ -15,7 +15,7 @@ guard hooks. Its premise:
 
 ```bash
 # 1. Install the skill (honors CLAUDE_CONFIG_DIR; falls back to ~/.claude)
-git clone https://github.com/cozytab/fable-mode \
+git clone https://github.com/cozytab/fable5-mode \
   "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode"
 
 # 2. (optional) register the enforcement hooks — merges into your settings.json,
@@ -112,7 +112,7 @@ where your config lives.
 ### Option A — automated (recommended; this is what an AI can run for you)
 
 ```bash
-git clone https://github.com/cozytab/fable-mode \
+git clone https://github.com/cozytab/fable5-mode \
   "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode"
 bash "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/install.sh"
 ```
@@ -125,7 +125,7 @@ the hooks any time with `bash install.sh --uninstall`.
 
 Or just tell Claude Code:
 
-> Install the skill at https://github.com/cozytab/fable-mode by following its README.
+> Install the skill at https://github.com/cozytab/fable5-mode by following its README.
 
 ### Option B — manual
 
