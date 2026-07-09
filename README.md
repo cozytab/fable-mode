@@ -245,8 +245,13 @@ ground every progress claim in a tool result; never end a turn on a promise you
 could act on; lead with the outcome; pause only where the user is genuinely
 needed; assessment before action; fresh-context verifiers over self-critique;
 model & effort routed by task (verification never downgraded); pass the *why*
-along when delegating; keep a lessons file. The three highest-value habits are
-auto-injected into every fable-mode session by the Profile Injector.
+along when delegating; keep a lessons file; **act once you have enough
+information** (no re-litigating settled decisions); **do the simplest thing
+that works** (no unrequested refactors or defensive code); write the final
+summary as a **re-grounding** for a reader who saw none of the work; **triage
+multi-part requests** so no sub-ask is silently dropped; write code that blends
+into the surrounding file. The highest-value habits are auto-injected into
+every fable-mode session by the Profile Injector.
 
 Starter skeletons live in [`templates/`](templates/) — SPEC, LEDGER, PROGRESS,
 and an engine-neutral fresh-eyes [verifier prompt](templates/VERIFIER_PROMPT.md).

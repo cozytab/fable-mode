@@ -107,7 +107,11 @@ def build_context(profile, model, ledger_state, open_items):
         "product, then fix the class via an invariant; (6) if the product "
         "can't be driven end-to-end, add a deterministic test hook and "
         "drive it — testability is a product feature; (7) declare workflow "
-        "deviations in one line, never silently comply or deviate.",
+        "deviations in one line, never silently comply or deviate; (8) do "
+        "the simplest thing that works — no unrequested refactors, "
+        "abstractions, or defensive code for impossible scenarios; (9) when "
+        "you have enough information to act, act — don't re-litigate settled "
+        "decisions or survey options you won't take.",
     ]
 
     if profile == "conservative" and \

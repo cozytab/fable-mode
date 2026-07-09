@@ -139,6 +139,13 @@ c = ctx(out)
 check("inject/paused-oneliner", rc == 0 and c and "PAUSED" in c
       and "model ceiling" in c and "Context recovery" not in c and len(c) < 400)
 
+# 19. Fable-5 strengths round: anti-gold-plating + act-don't-overplan injected
+d = proj(with_fable=True)
+rc, out = run({"cwd": d, "model": "claude-opus-4-8"})
+c = ctx(out)
+check("inject/scope-and-act-habits", rc == 0 and c and "simplest thing that works" in c
+      and "enough information to act" in c)
+
 for d in tmps: shutil.rmtree(d, ignore_errors=True)
 print("\n%d passed, %d failed" % (passed, failed))
 sys.exit(1 if failed else 0)
