@@ -128,7 +128,7 @@ bash "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/install.sh"
 
 ### 方式 B —— 手动
 
-按上面 clone，然后把这三条**合并**进 `<配置目录>/settings.json` 的 `hooks` 对象
+按上面 clone，然后把这四条**合并**进 `<配置目录>/settings.json` 的 `hooks` 对象
 （别覆盖文件；已有 `hooks` 键就加进去）。用你实际 clone 的绝对路径——下面的
 `${CLAUDE_CONFIG_DIR:-$HOME/.claude}` 会在 hook 运行时由 shell 展开：
 
@@ -139,6 +139,9 @@ bash "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/install.sh"
   "PreToolUse": [{"matcher": "Agent|Task|Workflow",
     "hooks": [{"type": "command",
       "command": "python3 ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/hooks/fable_spawn_guard.py"}]}],
+  "PostToolUse": [{"matcher": "Bash",
+    "hooks": [{"type": "command",
+      "command": "python3 ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/hooks/fable_fail_streak.py"}]}],
   "Stop": [{"hooks": [{"type": "command",
     "command": "python3 ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/hooks/fable_close_guard.py"}]}]
 }
@@ -159,9 +162,10 @@ bash "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/install.sh"
 
 ## 使用
 
-**触发 skill**：任意语言开口即可——"用 fable 模式""严谨模式""一次做对"，或英文
-"use fable mode""work like Fable 5""highest quality, do it right the first time"。
-你把一个有体量的任务交给它、要求一次做对时，也会触发。
+**点名才触发**——"用 fable 模式""严谨模式"，或英文 "use fable mode"
+"work like Fable 5""rigorous mode"。它刻意**不会**因为任务大、任务重要就自动
+进入——不搞突然袭击式的流程税；顶多*提议*要不要开。另一条显式路径是项目里有
+`.fable/` 目录，hooks 会自动把纪律带进会话。
 
 **开启机械强制**（对你认真对待的项目）：
 
@@ -240,12 +244,14 @@ fable-mode/
 │   ├── README.md         # hook 机制、账本格式、安装
 │   ├── _fable_common.py  # 共用工具（读 stdin、向上找 .fable/、解析账本）
 │   ├── fable_profile_inject.py   # SessionStart：按模型选档 + 恢复现场
-│   ├── fable_spawn_guard.py      # PreToolUse：无账本 → 拦详细 spawn
-│   └── fable_close_guard.py      # Stop：账本有未勾项 → 拦结束回合
+│   ├── fable_spawn_guard.py      # PreToolUse：设计门禁(需开卡) + 模型天花板
+│   ├── fable_fail_streak.py      # PostToolUse(Bash)：失败连击时注入归因阶梯
+│   ├── fable_lint.py             # 非 hook：一键纪律体检 CLI
+│   └── fable_close_guard.py      # Stop：有开卡/证据空洞 → 拦结束回合
 └── tests/
-    ├── test_guards.py    # 13 项
-    ├── test_inject.py    #  9 项
-    └── test_install.py   # 13 项（install.sh：全新/合并/幂等/重指向/卸载）
+    ├── test_guards.py    # 派发/收尾守卫、模型天花板、PAUSED、证据、失败连击、lint
+    ├── test_inject.py    # 按状态注入、档位、模型路由、升级策略
+    └── test_install.py   # install.sh：全新/合并/幂等/重指向/卸载
 ```
 
 ## 测试

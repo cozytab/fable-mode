@@ -163,8 +163,8 @@ outs = [run_streak({"cwd": d2, "session_id": sid2, "tool_name": "Bash",
                     "tool_response": FAIL_RESP}) for _ in range(4)]
 check("streak/no-fable-inert", all("additionalContext" not in o for _, o in outs), True)
 
-# 4. PAUSED -> off
-d3 = proj(with_fable=True, git=True, ledger="- [ ] 1. c\nPAUSED: x\n")
+# 4. PAUSED (with a reason — bare PAUSED is ignored by design) -> off
+d3 = proj(with_fable=True, git=True, ledger="- [ ] 1. c\nPAUSED: side work\n")
 sid3 = "fbtest-streak-3-" + RUN_TAG
 outs = [run_streak({"cwd": d3, "session_id": sid3, "tool_name": "Bash",
                     "tool_response": FAIL_RESP}) for _ in range(4)]
@@ -278,6 +278,35 @@ d = proj(with_fable=True, git=True, ledger="- [ ] 1. card\nPAUSED: side work\n")
 check("paused/ceiling-still-blocks", run_env(SPAWN, {"cwd": d,
       "session_id": "fbtest-ceil-opus", "tool_name": "Agent",
       "tool_input": {"prompt": SMALL, "model": "fable"}}), 2)
+
+# ---- Rigor floor (2026-07-08) ----
+# 1. stale closed cards must NOT unlock new fan-out: all-closed + big -> BLOCK
+d = proj(with_fable=True, git=True,
+         ledger="- [x] 1. done -- evidence: pytest 21/21\n")
+check("floor/all-closed-big-spawn-blocked", run(SPAWN, {"cwd": d,
+      "tool_name": "Agent", "tool_input": {"prompt": BIG}}), 2)
+
+# 2. bare PAUSED (no reason) is ignored -> close guard still blocks open items
+d = proj(with_fable=True, git=True, ledger="- [ ] 1. open card\nPAUSED\n")
+check("floor/bare-paused-ignored-close", run(CLOSE, {"cwd": d}), 2)
+
+# 3. bare PAUSED is ignored by the spawn design gate too (no open cards)
+d = proj(with_fable=True, git=True, ledger="PAUSED:\n")
+check("floor/bare-paused-ignored-spawn", run(SPAWN, {"cwd": d,
+      "tool_name": "Agent", "tool_input": {"prompt": BIG}}), 2)
+
+# 4. reasoned PAUSED still works (regression)
+d = proj(with_fable=True, git=True, ledger="- [ ] 1. open\nPAUSED: user side-quest\n")
+check("floor/reasoned-paused-still-works", run(CLOSE, {"cwd": d}), 0)
+
+# 5. hollow evidence ("evidence: ok") counts as missing -> BLOCK
+d = proj(with_fable=True, git=True, ledger="- [x] 1. done -- evidence: ok\n")
+check("floor/hollow-evidence-blocks", run(CLOSE, {"cwd": d}), 2)
+
+# 6. substantive evidence passes (regression)
+d = proj(with_fable=True, git=True,
+         ledger="- [x] 1. done -- evidence: 40/40 tests green\n")
+check("floor/substantive-evidence-allows", run(CLOSE, {"cwd": d}), 0)
 
 for d in tmps:
     shutil.rmtree(d, ignore_errors=True)

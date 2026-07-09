@@ -1,19 +1,16 @@
 ---
 name: fable-mode
-description: A work-discipline protocol that makes Opus 4.8 (or any non-frontier model) operate at Fable-5-grade quality. Core idea — output quality = model capability x work discipline: spend extra orchestration to buy single-pass quality via six levers (plan gate, small-card execution, adversarial self-check, real-product verification, context hygiene, checkpoint autonomy). Trigger when the user says "use fable mode", "enable fable-mode", "work like Fable 5", "highest-quality mode", "do it rigorously / one-shot correct", "don't cut corners", or the Chinese equivalents "用 fable 模式"、"开 fable-mode"、"像 Fable 5 一样做"、"严谨模式"、"最高质量做"、"一次做对"、"别偷懒"; also trigger when the user gives a substantial dev/research task and wants it done right the first time.
+description: A work-discipline protocol that makes Opus 4.8 (or any non-frontier model) operate at Fable-5-grade quality. Core idea — output quality = model capability x work discipline: spend extra orchestration to buy single-pass quality via six levers (plan gate, small-card execution, adversarial self-check, real-product verification, context hygiene, checkpoint autonomy). Activate ONLY on an explicit request — the user names the mode ("use fable mode", "enable fable-mode", "work like Fable 5", "rigorous mode", or the Chinese "用 fable 模式"、"开 fable-mode"、"像 Fable 5 一样做"、"严谨模式") — or when the project is already armed with a `.fable/` directory (the hooks handle that). Do not auto-trigger on a task merely being large, important, or quality-sensitive, and not on generic phrases like "do it well / 最高质量 / 别偷懒"; if a task looks like it would benefit, ask the user whether to enable fable-mode instead of assuming.
 triggers:
   - "fable mode"
   - "fable-mode"
+  - "use fable mode"
   - "work like Fable 5"
-  - "highest quality"
   - "rigorous mode"
-  - "one-shot correct"
-  - "don't cut corners"
   - "fable 模式"
+  - "开 fable-mode"
+  - "像 Fable 5 一样做"
   - "严谨模式"
-  - "最高质量做"
-  - "一次做对"
-  - "别偷懒"
 ---
 
 # fable-mode (Fable-grade work-discipline protocol)
@@ -22,7 +19,8 @@ You are now in fable-mode. Premise: frontier-model feats come half from the mode
 
 ## When to use / not use
 
-- **Use**: substantial dev tasks (features, projects, clones, refactors), must-be-right deliverables, multi-file changes, research reports.
+- **Activation is explicit-only**: enter this mode when the user asks for it by name, or when the project carries a `.fable/` directory. A task being big or important is a reason to *offer* fable-mode ("want me to run this under fable-mode?"), never to silently enter it.
+- **Use** (once activated): substantial dev tasks (features, projects, clones, refactors), must-be-right deliverables, multi-file changes, research reports.
 - **Don't use**: single-file tweaks, Q&A, small tasks verifiable at a glance — just do them. **Discipline is per-task, not per-project**: inside a fable-mode project a quick fix is still just a quick fix (guards stay quiet when the ledger is idle or paused — see Enforcement).
 - **Honest boundary**: real capability walls exist — a single very long reasoning chain, holding a huge codebase at once, strong aesthetic judgment. If a stronger model is available, say so plainly and let the user decide. If not (the common case), degrade gracefully — next section.
 - **Tool-reliability red line**: web-fetch tools can hang without timeout and stall a Workflow. Scraping subagents use `curl --max-time`, never WebFetch; long Workflows get a watchdog.
@@ -110,19 +108,23 @@ Four hooks turn the most-shirked rules into hard blocks. Armed **per project** b
 
 ```
 - [ ] 1. card (machine-checkable acceptance)   <- open: guards enforce
-- [x] 2. done -- evidence: pytest 21/21        <- [x] REQUIRES an evidence note
+- [x] 2. done -- evidence: pytest 21/21        <- [x] REQUIRES a substantive evidence note
 - [~] 3. not this round -- deferred: reason
 PAUSED: reason                                 <- a line anywhere: enforcement off
 ```
 
-- **Spawn Guard** (PreToolUse Agent/Task/Workflow): blocks a detailed spawn while no task cards exist (design gate), and blocks any spawn requesting a **model stronger than the session's** (model ceiling — checked on the `model` param and `model:` literals in Workflow scripts; stays active even when paused, it protects quota, not workflow).
+(`PAUSED` **must carry a reason** — a bare `PAUSED` is ignored, pausing has to
+be attributable. Evidence notes must be substantive: `evidence: ok` counts as
+missing.)
+
+- **Spawn Guard** (PreToolUse Agent/Task/Workflow): blocks a detailed spawn while the ledger has no **open** cards — no ledger, and equally a ledger holding only a finished round's closed cards (design gate: new fan-out needs a live card) — and blocks any spawn requesting a **model stronger than the session's** (model ceiling — checked on the `model` param and `model:` literals in Workflow scripts; stays active even when paused, it protects quota, not workflow).
 - **Fail-Streak Reminder** (PostToolUse Bash, advisory): every 3rd consecutive failing command injects the attribution ladder — stops grinding on the wrong layer mechanically, not by willpower.
 - **Close Guard** (Stop): blocks ending the turn while open `- [ ]` items remain, **and** while any `- [x]` lacks an `-- evidence:` note (evidence-on-close: adjectives don't close cards).
 - **Profile Injector** (SessionStart): injects tier + routing + habits, **sized to the ledger state** — full when a round is starting/active, minimal when idle, one line when paused.
 
 **Wrap-up lint**: `python3 <skill-dir>/hooks/fable_lint.py <project_dir>` — machine-checks the discipline itself (SPEC source tags present, open cards name acceptance, closed cards carry evidence). Run it at step 7 of the execution template; findings are open work.
 
-**Per-task granularity**: *active* (open cards) = full enforcement; *idle* (no/all-closed cards) = quiet, small tasks flow freely; *paused* (PAUSED line) = guards off except the ceiling. Write PAUSED only when the user steers to work unrelated to the round; remove it to resume. Small spawns (<1500 chars) and forks skip the design gate; everything fails open (a guard bug never bricks the session); loop-safe.
+**Per-task granularity**: *active* (open cards) = full enforcement; *idle* (no/all-closed cards) = close guard quiet and small tasks flow freely, but a **detailed** fan-out still needs a live card first; *paused* (a `PAUSED: reason` line) = guards off except the ceiling. Write PAUSED only when the user steers to work unrelated to the round; remove it to resume. Small spawns (<1500 chars) and forks skip the design gate; everything fails open (a guard bug never bricks the session); loop-safe.
 
 **For substantial work: after writing the SPEC, `mkdir .fable` + create `.fable/LEDGER.md` to get the mechanical backstop.**
 

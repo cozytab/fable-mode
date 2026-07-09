@@ -125,11 +125,16 @@ def load_session_model(session_id):
 EVIDENCE_RE = re.compile(r"(evidence|verified|证据|凭证|验证)\s*[:：]", re.IGNORECASE)
 
 
-def closed_without_evidence(path):
-    """List `- [x]` ledger lines that carry no evidence marker.
+MIN_EVIDENCE_CHARS = 6
 
-    Convention: a card may only be checked `- [x]` together with a short
+
+def closed_without_evidence(path):
+    """List `- [x]` ledger lines whose evidence marker is missing OR hollow.
+
+    Convention: a card may only be checked `- [x]` together with a substantive
     evidence note (`-- evidence: <command output / screenshot / test count>`).
+    A marker followed by fewer than MIN_EVIDENCE_CHARS characters ("evidence:
+    ok") is treated as missing — adjectives are not evidence.
     Returns [] on any read problem (fail-open).
     """
     bad = []
@@ -137,7 +142,10 @@ def closed_without_evidence(path):
         with open(path, "r", encoding="utf-8", errors="replace") as fh:
             for line in fh:
                 s = line.strip()
-                if s[:5].lower() == "- [x]" and not EVIDENCE_RE.search(s):
+                if s[:5].lower() != "- [x]":
+                    continue
+                m = EVIDENCE_RE.search(s)
+                if not m or len(s[m.end():].strip()) < MIN_EVIDENCE_CHARS:
                     bad.append(s)
     except Exception:
         return []
@@ -176,8 +184,11 @@ def parse_ledger(path):
     A ledger line is a markdown checkbox: `- [ ] ...`, `- [x] ...`, `- [~] ...`
     (case-insensitive on x). `open_items` is the list of `- [ ]` line texts.
     `has_any` is True if the file has at least one checkbox line at all.
-    `paused` is True if any line starts with `PAUSED` (case-insensitive) —
-    the user-facing switch to suspend enforcement mid-round for unrelated work.
+    `paused` is True if any line starts with `PAUSED` (case-insensitive) AND
+    carries a reason (>=3 chars after the marker) — the user-facing switch to
+    suspend enforcement mid-round for unrelated work. A bare `PAUSED` with no
+    reason is ignored: pausing must be attributable, not a one-word escape
+    hatch a model can reach for silently.
     """
     open_items = []
     has_any = False
@@ -187,7 +198,9 @@ def parse_ledger(path):
             for line in fh:
                 s = line.strip()
                 if s.upper().startswith("PAUSED"):
-                    paused = True
+                    reason = s[len("PAUSED"):].strip(" \t:：-–—")
+                    if len(reason.strip()) >= 3:
+                        paused = True
                     continue
                 if len(s) < 4 or not s.startswith("- ["):
                     continue

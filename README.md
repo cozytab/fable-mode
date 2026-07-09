@@ -140,7 +140,7 @@ hooks. It's idempotent, so re-running is always safe.
 
 ### Option B — manual
 
-Clone as above, then **merge** these three entries into the `hooks` object of
+Clone as above, then **merge** these four entries into the `hooks` object of
 `<config-dir>/settings.json` (don't overwrite the file; if you already have a
 `hooks` key, add these under it). Use the absolute path to where you actually
 cloned it — the `${CLAUDE_CONFIG_DIR:-$HOME/.claude}` below is expanded by the
@@ -153,6 +153,9 @@ shell at hook-run time:
   "PreToolUse": [{"matcher": "Agent|Task|Workflow",
     "hooks": [{"type": "command",
       "command": "python3 ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/hooks/fable_spawn_guard.py"}]}],
+  "PostToolUse": [{"matcher": "Bash",
+    "hooks": [{"type": "command",
+      "command": "python3 ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/hooks/fable_fail_streak.py"}]}],
   "Stop": [{"hooks": [{"type": "command",
     "command": "python3 ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/hooks/fable_close_guard.py"}]}]
 }
@@ -177,10 +180,12 @@ When a user asks you to install fable-mode from this repo:
 
 ## Use
 
-**Trigger the skill** by asking for it in either language — "use fable mode",
-"work like Fable 5", "highest quality, do it right the first time", or the
-Chinese equivalents ("用 fable 模式", "严谨模式", "一次做对"). It also triggers
-when you hand over a substantial task and ask for it done right the first time.
+**Trigger the skill by asking for it by name** — "use fable mode", "work like
+Fable 5", "rigorous mode", or the Chinese equivalents ("用 fable 模式",
+"严谨模式"). It deliberately does **not** auto-trigger just because a task is
+big or important — no surprise process tax; at most it may *offer* to enable
+itself. The other explicit path is a project armed with `.fable/`, where the
+hooks carry the discipline in automatically.
 
 **Enable the mechanical enforcement** on a project you're taking seriously:
 
@@ -275,12 +280,14 @@ fable-mode/
 │   ├── README.md         # hook mechanics, ledger format, install
 │   ├── _fable_common.py  # shared helpers (stdin, upward .fable/ search, ledger parse)
 │   ├── fable_profile_inject.py   # SessionStart: per-model tier + context recovery
-│   ├── fable_spawn_guard.py      # PreToolUse: no ledger → block detailed spawns
-│   └── fable_close_guard.py      # Stop: open ledger items → block turn end
+│   ├── fable_spawn_guard.py      # PreToolUse: design gate (open card required) + model ceiling
+│   ├── fable_fail_streak.py      # PostToolUse(Bash): attribution-ladder reminder on fail streaks
+│   ├── fable_lint.py             # not a hook: one-shot discipline lint CLI
+│   └── fable_close_guard.py      # Stop: open cards / hollow evidence → block turn end
 └── tests/
-    ├── test_guards.py    # 13 cases
-    ├── test_inject.py    #  9 cases
-    └── test_install.py   # 13 cases (install.sh: fresh/merge/idempotent/re-point/uninstall)
+    ├── test_guards.py    # spawn/close guards, model ceiling, PAUSED, evidence, fail-streak, lint
+    ├── test_inject.py    # per-state injection, tiers, routing, escalation policy
+    └── test_install.py   # install.sh: fresh/merge/idempotent/re-point/uninstall
 ```
 
 ## Tests

@@ -26,8 +26,8 @@ The four hooks are registered in the global `settings.json` and fire for every
 project, every session. "Does the project root have a `.fable/` directory" is
 the switch:
 
-- **Has `.fable/`** -> the three hooks take effect.
-- **No `.fable/`** -> the three hooks pass through silently, as if absent — they never touch your other projects.
+- **Has `.fable/`** -> the four hooks take effect.
+- **No `.fable/`** -> the four hooks pass through silently, as if absent — they never touch your other projects.
 
 ## Per-model tier selection (Profile Injector)
 
@@ -53,12 +53,17 @@ defaults to the conservative tier. This is SessionStart-only info (there is no
 PAUSED: reason        <- optional line anywhere: suspend enforcement
 ```
 
-- `- [ ]` = open, blocks stop.
-- `- [x]` / `- [~]` = closed. A `- [x]` additionally needs an evidence note
-  (`evidence:` / `verified:` / `证据:`) or the close guard blocks turn-end.
-- `PAUSED` (line prefix, case-insensitive) = enforcement off **except the model
-  ceiling** (quota protection is not workflow discipline). For user-steered
-  work unrelated to the current round; remove the line to resume.
+- `- [ ]` = open, blocks stop. Detailed fan-out requires at least one open
+  card — a finished round's closed cards don't unlock new delegation.
+- `- [x]` / `- [~]` = closed. A `- [x]` additionally needs a **substantive**
+  evidence note (`evidence:` / `verified:` / `证据:` + at least a few concrete
+  characters — `evidence: ok` counts as missing) or the close guard blocks
+  turn-end.
+- `PAUSED: reason` (line prefix, case-insensitive, **reason required** — a bare
+  `PAUSED` is ignored so pausing stays attributable) = enforcement off
+  **except the model ceiling** (quota protection is not workflow discipline).
+  For user-steered work unrelated to the current round; remove the line to
+  resume.
 - SPEC.md/PROGRESS.md remain the durable design/progress docs; LEDGER.md is only the enforcement-state snapshot of "what I committed to this round."
 
 ## Per-task granularity (big projects)
@@ -70,8 +75,8 @@ state, so small tasks in a big project aren't taxed:
 |---|---|---|
 | starting (no cards yet) | design gate armed | full (~1.6KB) |
 | **active** (open `- [ ]`) | full enforcement | full + context recovery |
-| **idle** (all closed) | quiet | one-liner (~0.4KB) |
-| **paused** (PAUSED line) | off except model ceiling | one-liner (~0.2KB) |
+| **idle** (all closed) | close guard quiet; detailed fan-out still needs a new open card | one-liner (~0.4KB) |
+| **paused** (`PAUSED: reason` line) | off except model ceiling | one-liner (~0.2KB) |
 
 ## Model ceiling (mechanical)
 
@@ -107,7 +112,7 @@ idempotently (re-run to re-point after a move; `--uninstall` to remove):
 bash "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/install.sh"
 ```
 
-To register by hand instead, merge these three entries into the `hooks` object
+To register by hand instead, merge these four entries into the `hooks` object
 of `<config-dir>/settings.json` (don't overwrite the file). The
 `${CLAUDE_CONFIG_DIR:-$HOME/.claude}` is expanded by the shell at hook-run time;
 use your actual absolute clone path if it differs:
@@ -119,6 +124,9 @@ use your actual absolute clone path if it differs:
   "PreToolUse": [{"matcher": "Agent|Task|Workflow",
     "hooks": [{"type": "command",
       "command": "python3 ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/hooks/fable_spawn_guard.py"}]}],
+  "PostToolUse": [{"matcher": "Bash",
+    "hooks": [{"type": "command",
+      "command": "python3 ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/hooks/fable_fail_streak.py"}]}],
   "Stop": [{"hooks": [{"type": "command",
     "command": "python3 ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/hooks/fable_close_guard.py"}]}]
 }

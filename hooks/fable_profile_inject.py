@@ -56,10 +56,11 @@ def build_context(profile, model, ledger_state, open_items):
         return (
             "[fable-mode] Project armed, ledger idle — quick tasks flow "
             "freely, no process tax. For the next substantial task, follow "
-            "%s: SPEC + task cards in .fable/LEDGER.md first. Always: audit "
-            "every progress claim against a tool result; don't end the turn "
-            "on an actionable promise; lead with the outcome. Never spawn a "
-            "subagent above this session's model." % SKILL
+            "%s: SPEC + task cards in .fable/LEDGER.md first (a detailed "
+            "fan-out needs a live open card). Always: audit every progress "
+            "claim against a tool result; don't end the turn on an actionable "
+            "promise; lead with the outcome. Never spawn a subagent above "
+            "this session's model." % SKILL
         )
 
     # starting / active -> full injection
@@ -90,12 +91,13 @@ def build_context(profile, model, ledger_state, open_items):
         "strong as the implementer. When unsure, inherit the session model.",
         "Design gate: docs/SPEC.md (requirements + approach + task cards, "
         "each with machine-checkable acceptance) and cards in "
-        ".fable/LEDGER.md (- [ ]/- [x]/- [~]; a PAUSED line suspends "
-        "enforcement for unrelated work). Before designing, close the "
-        "load-bearing unknowns with targeted probes; tag SPEC decisions "
-        "[measured]/[inferred]/[not-shown]. Guards block spawning without "
-        "cards, stopping with open cards, and checking a card `- [x]` "
-        "without an `-- evidence:` note.",
+        ".fable/LEDGER.md (- [ ]/- [x]/- [~]; a `PAUSED: reason` line "
+        "suspends enforcement for unrelated work — bare PAUSED is ignored). "
+        "Before designing, close the load-bearing unknowns with targeted "
+        "probes; tag SPEC decisions [measured]/[inferred]/[not-shown]. "
+        "Guards block spawning without OPEN cards, stopping with open cards, "
+        "and checking a card `- [x]` without a substantive `-- evidence:` "
+        "note.",
         "Fable-5 habits: (1) audit every progress claim against a tool "
         "result — unverified means say 'unverified'; (2) don't end the turn "
         "on an actionable plan/promise — act now; (3) lead with the outcome; "

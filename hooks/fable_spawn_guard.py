@@ -3,8 +3,9 @@
 
 Two enforcement duties when the project has opted in (`.fable/` dir present):
 
-1. Design gate: block a *detailed* delegation while no `.fable/LEDGER.md` with
-   task cards exists yet (write the SPEC + ledger before fanning out).
+1. Design gate: block a *detailed* delegation while the ledger has no OPEN
+   task cards (write the SPEC + a live round's cards before fanning out;
+   closed cards from a finished round don't unlock new fan-out).
    Small spawns and forks are exempt.
 2. Model ceiling: block any spawn that requests a model STRONGER than the
    session's (haiku < sonnet < opus < fable) — fable-mode exists to get
@@ -117,12 +118,15 @@ def main():
     _open, has_any, paused = parse_ledger(ledger_path(fable_dir))
     if paused:
         return 0  # round paused -> design gate off (ceiling stayed active above)
-    if has_any:
-        return 0  # ledger exists with task cards -> allowed
-
+    if _open:
+        return 0  # a live round with open cards -> allowed
+    # No OPEN cards: either no ledger at all, or only closed cards from a
+    # finished round. Stale closed cards must not unlock new fan-out — a
+    # detailed delegation is round work, so it needs a live card first.
     sys.stderr.write(
         "[fable-mode] BLOCKED: this project is in fable-mode (.fable/ present) "
-        "but .fable/LEDGER.md has no task cards yet.\n"
+        "but .fable/LEDGER.md has no OPEN task cards for a current round"
+        " (closed cards from a finished round don't count).\n"
         "Before fanning out a detailed subagent/Workflow, write the design gate:\n"
         "  1. docs/SPEC.md  -- requirements + approach + task-card list\n"
         "  2. .fable/LEDGER.md  -- one checkbox per card:\n"
