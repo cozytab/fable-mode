@@ -122,6 +122,10 @@ bash "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/install.sh"
 
 > 按 https://github.com/cozytab/fable5-mode 的 README 帮我安装这个 skill。
 
+**升级**：`git pull` 之后**重跑 `install.sh`**。新版本可能新增 hook 事件（比如
+`PostToolUse`），而只有安装脚本会更新你的 `settings.json`——单纯 `git pull` 只更新
+文件、不会注册新 hook。脚本幂等，重跑永远安全。
+
 ### 方式 B —— 手动
 
 按上面 clone，然后把这三条**合并**进 `<配置目录>/settings.json` 的 `hooks` 对象

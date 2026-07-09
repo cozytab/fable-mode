@@ -133,6 +133,11 @@ Or just tell Claude Code:
 
 > Install the skill at https://github.com/cozytab/fable5-mode by following its README.
 
+**Updating**: after `git pull`, re-run `install.sh`. A new version can add hook
+events (e.g. a `PostToolUse` hook), and only the installer updates your
+`settings.json` — a plain `git pull` ships the files but won't register new
+hooks. It's idempotent, so re-running is always safe.
+
 ### Option B — manual
 
 Clone as above, then **merge** these three entries into the `hooks` object of
