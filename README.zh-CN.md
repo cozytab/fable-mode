@@ -1,11 +1,12 @@
-# fable-mode
+# fable5-mode
 
 [English](README.md) | **简体中文**
 
-**一套工作纪律协议，让 Opus 4.8（或任意非顶级模型）以 Fable-5 级别的质量干活。**
+**让 Opus 4.8（或任意 Claude 模型）像 Claude Fable 5 一样干活。** 一个
+[Claude Code](https://claude.com/claude-code) skill，外加一组守卫 hook，给非顶级
+模型注入 Fable-5 级别的工作纪律：设计门禁、自我验证、子 agent 路由，全部机械强制。
 
-fable-mode 是一个 [Claude Code](https://claude.com/claude-code) skill，外加一组
-守卫 hook。核心前提：
+这个 skill 的调用名是 `fable-mode`；核心前提：
 
 > **产出质量 = 模型能力 × 工作纪律**
 

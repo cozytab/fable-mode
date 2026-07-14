@@ -1,11 +1,13 @@
-# fable-mode
+# fable5-mode
 
 **English** | [简体中文](README.zh-CN.md)
 
-**A work-discipline protocol that makes Opus 4.8 (or any non-frontier model) operate at Fable-5-grade quality.**
+**Make Opus 4.8 — or any Claude model — work like Claude Fable 5.** A
+[Claude Code](https://claude.com/claude-code) skill plus guard hooks that give a
+non-frontier model Fable-5-grade work discipline: plan-gate, self-verification,
+and sub-agent routing, enforced mechanically.
 
-fable-mode is a [Claude Code](https://claude.com/claude-code) skill plus a set of
-guard hooks. Its premise:
+The skill is invoked as `fable-mode`; its premise:
 
 > **output quality = model capability × work discipline**
 
@@ -127,7 +129,7 @@ bash "${CLAUDE_CONFIG_DIR:-$HOME/.claude}/skills/fable-mode/install.sh"
 ```
 
 `install.sh` **resolves its own location** (so the hook paths are correct no
-matter where you cloned it), honors `CLAUDE_CONFIG_DIR`, and **merges** the three
+matter where you cloned it), honors `CLAUDE_CONFIG_DIR`, and **merges** the four
 hooks into your `settings.json` without disturbing existing config. It's
 idempotent — re-run it after moving the skill and it re-points the paths. Remove
 the hooks any time with `bash install.sh --uninstall`.
