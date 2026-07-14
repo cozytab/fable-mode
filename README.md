@@ -256,20 +256,13 @@ every fable-mode session by the Profile Injector.
 Starter skeletons live in [`templates/`](templates/) — SPEC, LEDGER, PROGRESS,
 and an engine-neutral fresh-eyes [verifier prompt](templates/VERIFIER_PROMPT.md).
 
-**Cross-session memory**: lessons that transcend one project go to
-`<config-dir>/fable-lessons.md` (one bullet each, newest first). The Profile
-Injector surfaces the top few in every armed session — a lesson learned once
-stops being relearned, which is one of the documented Fable 5 advantages this
-skill reproduces mechanically.
-
 ## How close to Fable 5 does it actually get?
 
 Honest answer: frontier output = capability × discipline, and this skill can
 only transplant the **discipline** half — but it transplants essentially all of
 it, and mechanically rather than as prose promises: the plan gate, per-card
 acceptance, adversarial verification, evidence-on-close, the attribution
-ladder, cross-session lessons, and the model ceiling are enforced by hooks and
-lint, not hope. What it cannot give a weaker model: single very long reasoning
+ladder, and the model ceiling are enforced by hooks and lint, not hope. What it cannot give a weaker model: single very long reasoning
 chains, holding a huge codebase in mind at once, frontier-grade visual
 precision and taste. For those it degrades gracefully — decompose, best-of-N +
 judge, tools as ground truth — and tells you what remains uncertain instead of

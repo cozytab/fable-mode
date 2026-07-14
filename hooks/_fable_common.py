@@ -125,36 +125,6 @@ def load_session_model(session_id):
 EVIDENCE_RE = re.compile(r"(evidence|verified|证据|凭证|验证)\s*[:：]", re.IGNORECASE)
 
 
-# --- cross-session lessons memory (the Fable 5 "memory system") ---
-
-def lessons_path():
-    """Global lessons file, outside any project so it survives re-clones."""
-    cfg = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.expanduser("~/.claude")
-    return os.path.join(cfg, "fable-lessons.md")
-
-
-def read_lessons(max_items=5, max_chars=600):
-    """Top bullet lines from the lessons file, newest-first by convention.
-
-    Bounded on both count and total size so the injection tax stays small.
-    Returns [] on any problem (fail-open).
-    """
-    try:
-        with open(lessons_path(), encoding="utf-8", errors="replace") as fh:
-            items = [ln.strip() for ln in fh
-                     if ln.strip().startswith(("-", "*"))]
-    except Exception:
-        return []
-    out, total = [], 0
-    for it in items[:max_items]:
-        it = it[:200]
-        if total + len(it) > max_chars:
-            break
-        out.append(it)
-        total += len(it)
-    return out
-
-
 MIN_EVIDENCE_CHARS = 6
 
 
