@@ -26,7 +26,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from _fable_common import (  # noqa: E402
     read_hook_input, start_dir, find_fable_dir, ledger_path, parse_ledger,
-    save_session_model,
+    save_session_model, read_lessons,
 )
 
 # resolved from this file's real location, correct wherever the skill is cloned
@@ -123,6 +123,13 @@ def build_context(profile, model, ledger_state, open_items):
             "truth, flag residual risk instead of blocking. "
             "(FABLE_ESCALATION=on if a stronger tier truly exists.)"
         )
+
+    # Cross-session memory: surface lessons from previous fable-mode runs so a
+    # lesson learned once stops being relearned (full injections only).
+    lessons = read_lessons()
+    if lessons:
+        lines.append("Lessons from previous fable-mode runs (newest first — "
+                     "honor them):\n" + "\n".join("  " + l for l in lessons))
 
     if open_items:
         shown = open_items[:MAX_LIST]

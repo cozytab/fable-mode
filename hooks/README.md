@@ -39,7 +39,10 @@ from the hook input and auto-selects a tier, injecting it as context:
 - Override: env var `FABLE_MODE_PROFILE=auto|conservative|throughput`.
 
 It also injects the open items from `.fable/LEDGER.md` for "context recovery"
-(aligned with the context-hygiene lever).
+(aligned with the context-hygiene lever), and the top bullets from the
+cross-session lessons file `<config-dir>/fable-lessons.md` (newest first,
+bounded to ~5 items / 600 chars; full injections only, so idle/paused sessions
+stay frugal; missing file -> silently skipped).
 Note: the `model` field is not guaranteed to be present; when absent it safely
 defaults to the conservative tier. This is SessionStart-only info (there is no
 `$CLAUDE_MODEL` environment variable).

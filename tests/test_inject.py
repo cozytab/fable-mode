@@ -146,6 +146,27 @@ c = ctx(out)
 check("inject/scope-and-act-habits", rc == 0 and c and "simplest thing that works" in c
       and "enough information to act" in c)
 
+# 20-22. cross-session lessons memory
+cfg = tempfile.mkdtemp(prefix="fbcfg_"); tmps.append(cfg)
+open(os.path.join(cfg, "fable-lessons.md"), "w").write(
+    "# lessons\n- headless rAF throttles: use a step-clock test hook\n- always cache-bust before declaring a fix dead\n")
+d = proj(with_fable=True)
+rc, out = run({"cwd": d, "model": "claude-opus-4-8"}, env={"CLAUDE_CONFIG_DIR": cfg})
+c = ctx(out)
+check("inject/lessons-surfaced", rc == 0 and c and "Lessons from previous" in c
+      and "step-clock test hook" in c)
+
+cfg2 = tempfile.mkdtemp(prefix="fbcfg2_"); tmps.append(cfg2)  # no lessons file
+d = proj(with_fable=True)
+rc, out = run({"cwd": d, "model": "claude-opus-4-8"}, env={"CLAUDE_CONFIG_DIR": cfg2})
+c = ctx(out)
+check("inject/no-lessons-file-silent", rc == 0 and c and "Lessons from previous" not in c)
+
+d = proj(with_fable=True, ledger="- [x] 1. done -- evidence: 12/12 green\n")  # idle
+rc, out = run({"cwd": d, "model": "claude-opus-4-8"}, env={"CLAUDE_CONFIG_DIR": cfg})
+c = ctx(out)
+check("inject/lessons-skipped-when-idle", rc == 0 and c and "Lessons from previous" not in c)
+
 for d in tmps: shutil.rmtree(d, ignore_errors=True)
 print("\n%d passed, %d failed" % (passed, failed))
 sys.exit(1 if failed else 0)
