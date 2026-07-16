@@ -69,16 +69,19 @@ if mode == "uninstall":
     print("fable-mode hooks removed from %s" % settings_path)
     sys.exit(0)
 
-# install: prune our old entries first (handles moves/upgrades), then add fresh.
+# install: prune our old entries first (handles moves/upgrades), then add
+# fresh. Prune ONCE per event before appending — pruning inside the append
+# loop would strip the groups just added for an earlier spec on the same
+# event (two hooks share PostToolUse/Bash).
 added = 0
+for event in {e for e, _, _ in SPECS}:
+    hooks[event] = prune(hooks.get(event, []))
 for event, matcher, fname in SPECS:
-    entries = prune(hooks.get(event, []))
     group = {"hooks": [{"type": "command",
                         "command": "python3 %s" % os.path.join(hooks_dir, fname)}]}
     if matcher:
         group["matcher"] = matcher
-    entries.append(group)
-    hooks[event] = entries
+    hooks[event].append(group)
     added += 1
 
 data["hooks"] = hooks
